@@ -1,29 +1,42 @@
 #!/bin/bash
-# Renombra archivos según la primera clase pública que contengan
 
-for f in *.java; do
-    # Extrae el nombre de la clase pública
-    class_name=$(grep -m 1 '^public class ' "$f" | awk '{print $3}')
-    # Quita el ";" final si lo hubiera
-    class_name=${class_name//;/}
+echo "🚀 Iniciando compilación del Laboratorio 2: Secuencias"
+echo "===================================================="
 
-    if [ -n "$class_name" ]; then
-        mv "$f" "$class_name.java"
+errores=0
+for i in {1..6}; do
+    problema="Problema${i}"
+    
+    if [ ! -f "${problema}.java" ]; then
+        echo "❌ $problema.java NO EXISTE - Crea el archivo"
+        errores=$((errores + 1))
+        continue
     fi
+    
+    echo "🔨 Compilando $problema.java..."
+    if javac -verbose "$problema.java" 2>&1 | grep -q "error"; then
+        echo "💥 ERROR DE COMPILACIÓN en $problema.java"
+        echo "   Revisa la sintaxis y lógica del código."
+        errores=$((errores + 1))
+    else
+        echo "✅ $problema.java compilado correctamente"
+        echo "   💻 Ejecutando..."
+        if [ -f "input${i}.txt" ]; then
+            java "$problema" < "input${i}.txt"
+        else
+            java "$problema"
+        fi
+        echo "   --- Fin ejecución ---"
+    fi
+    echo ""
 done
 
-# Compilar todos los .java en bin/
-mkdir -p bin
-echo "Compilando..."
-javac *.java -d bin
-
-if [ $? -eq 0 ]; then
-    echo "Compilación completada."
+if [ $errores -eq 0 ]; then
+    echo "🎉 ¡TODOS LOS PROBLEMAS COMPILAN Y EJECUTAN CORRECTAMENTE!"
+    echo "   Listo para hacer commit y push al repositorio."
 else
-    echo "Error durante la compilación."
+    echo "⚠  Hay $errores problemas pendientes. Revisa los errores arriba."
 fi
-
-
 
 
 
